@@ -153,5 +153,157 @@ movie listings in a colon delimited then everything is wonderful. If they have
 a different name for they movie file, then it's easy to put the name of the
 file in a properties file. But what if they have a completely different form of
 storing their movie listing: a SQL database, an XML file, a web service, or
-just another format of text file? In this case we need a different class to grab
-that data.
+just another format of text file? In this case we need a different class to
+grab that data. Now because I've defined a `MovieFinder` interface, this won't
+alter my `moviesDirectedeBy` method. But I still need to get an instance of the
+right finder implementation into place.
+
+Figure 1 shows the dependencies for this situation. The `MovieLister` class is
+dependent on both the MovieFinder interface and upon the implementation. We
+would prefer it if it were only dependent on the interface, but then how do we
+make an instance to work with?
+
+In my book P of EAA, we described this situation as a Plugin. The
+implementation class for the finder isn't lined into the program at compile
+time, since I don't know what my friends are going to use. Instead we want my
+lister to work with any implementation, and for that implementation to be
+plugged in at some later point, out of my hands. The problem is how can I make
+that link so that my lister class is ignorant of the implementation class, but
+can still talk to an instance to do its work.
+
+Expanding this into a real system, we might have dozens of such services and
+components. In each acse we can abstarct our use of these components by talking
+to them through an interface (and using an adapter if the component isn't
+designed with an interface in mind). But if we wish to deploy this system in
+different ways, we need to use plugins to handle the interaction with these
+services so we can use different implementations in different deployments.
+
+So the core problem is how do we assemble these plugins into an application?
+This is one of the main problems that this new breed of lightweight containers
+face, and universally they all do it using __Inversion of Control__.
+
+
+Inversion of Control
+--------------------
+When these containers talk about how they are so useful because they implement
+"Inversion of Control" I end up very puzzled. __Inversion of Control__ is a
+common characteristic of frameworks, so saying that these lightweight
+containers are special because they use Inversion of control is like saying my
+car special because it has wheels.
+
+The question is: "What aspect of control are they inverting?" When I first ran
+into inversiono of control, it was in the main control of a user interface.
+Early user interfaces were controlled by the application program. You would
+have a sequence of commands like "Enter name", "enter address"; your program
+would drive the prompts and pick up a respose to each one. With graphical (or
+even screen based) UIs framework would contain this main loop and your program
+instead event handlers for the various fields on the screen. The main control
+of the program was inverted, moved away from you to the framework.
+
+For this new breed of containers the inversion is about how they lookup a
+plugin implementation by directly instantiating it. This stops the finder from
+being a plugin. The approach that these containers use is to ensure that any
+use of a plugin follows some convention that allows a separate assembler module
+to inject the implementation into the lister.
+
+As a result I think we need a more specific name for this pattern. Inversion of
+Control is too generic a term, and thus people find it confusing. As a result
+with a lot of discussion with various IoC advocates we settled on the name
+_Dependency Injection_.
+
+I'm going to start by talking about the various forms of Dependency Injection,
+but I'll point out now that that's not the only way of removing the dependency
+from the application class to the plugin implementation. The other pattern you
+can use to do this is Service Locator, and I'll discuss that after I'm done
+with explaining Dependency Injection.
+
+
+Forms of Dependency Injection
+-----------------------------
+
+The basic idea of the Dependency Injection is to have a separate object, an
+assembler, that populates a field in the lister class with an appropriate
+implementation for the finder interface, resulting in a dependency diagram
+along the lines of Figure 2.
+
+There are three main styles of dependency injection. The names I'm using for
+them are Constructor Injection, Setter Injection, and Interface Injection. If
+you read about this stuff in the current discussions about Inversion of Control
+you'll hear these referred to as type 1 IoC (Interface Injection), type 2 IoC
+(setter injectiono), type 3 IoC (Constructor Injection). I find numeric names
+rather hard to remember, which is why I've used the names I have here.
+
+
+Constructor Injection with PicoContainer
+----------------------------------------
+
+I'll start with showing how this injection is done using a lightweight
+container called PicoContainer. I'm starting here primarily because several of
+my colleagues at ThoughtWorks are very active in the development of
+PicoContainer (yes, it's a sort of corporate nepotism.)
+
+PicoContainer uses a constructor to decide how to injet a finder implementation
+into the lister class. For this to work, the movie lister class needs to declare
+a constructor that includes everything it needs injected.
+
+```
+class MovieLister...
+    public MovieLister(MovieFinder finder)
+    {
+        this.finder = finder;
+    }
+```
+
+The finder itself will also be managed by the PicoContainer, and as such will
+have the filename of the text file injected into it by the container.
+
+```
+class ColonMovieFinder
+    public ColonMovieFinder (String filename)
+    {
+        this.filename = filename;
+    }
+```
+
+The PicoContainer then needs to be told which implementation class to associate
+with each interface, and which string to inject into the finder.
+
+```
+private MutablePicoContainer configureContainer(){
+    MutablePicoContainer pico = new DefaultPicoContainer();
+    Parameter[] finderParams = {new ConstantParameter("movies1.txt")};
+    pico.registerComponentImplementation(MovieFinder.class,
+        ColonMovieFinder.class, finderParams);
+    pico.registerComponentImplementation(MovieLister.class);
+    return picol;
+}
+```
+
+This configuration code is typically set up in a different class. For our
+example, each friend who uses my lister might write the appropriate
+configuration code in some setup class of their own. Of course it's common to
+hold this kind of configuration information in separate config files. you can
+write a class to read a config file and set up the container appropriately.
+Although PicoContainer doesn't contain this functionality itself, there is a
+closely related project called NanoContainer that provides the appropriate
+wrappers to allow you to have XML configuration files. Such a nano container
+will parse the XML and then configure an underlying PicoContainer. The
+philosophy of the project is to separate the config file format from the
+underlying mechanism.
+
+To use the container you write code something like this.
+
+```
+public void testWithPico(){
+    MutablePicoContainer pico = configureContainer();
+    MovieLister lister = (MovieLister)
+        pico.getComponentInstance(MovieLister.class);
+    Movie[] movies = lister.moviesDirectedBy("Sergio Leone");
+    asssertEquals("Once upon a time in the West", movies[0].getTitle());
+}
+```
+
+Although in this example I've used constructor injection PicoContainer also
+supports setter injection, although its developers do prefer constructor
+injection.
+
