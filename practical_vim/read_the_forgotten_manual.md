@@ -46,3 +46,20 @@ several keys at once to sound a chord. In most text editors, keyboards shortcuts
 are triggered by pressing a key while holding down one or more modifier
 buttons, such as the control and command keys. This is the Qwerty equivalent of
 playing a chord on the piano keyboard.
+
+Some of Vim's commands are also triggered by playing chords, but Normal mode
+commands are designed to be typed as a sequence of keystrokes. It's the Qwerty
+equivalent of playing a melody on the piano keyboard.
+
+`Ctrl-s` is common convention for representing chordal key commands. It means
+"Press the Control key and the `s` key at the same time." But this convention
+isn't well suited to describing Vim's modal command set. In this section, we'll
+meet the notation used throughout _Practical Vim_ to illustrate Vim usage.
+
+
+Playing Melodies
+----------------
+
+In Normal mode, we compose commands by typing one or more keystrokes in
+sequence. These commands appear as follows:
+
