@@ -63,3 +63,22 @@ Playing Melodies
 In Normal mode, we compose commands by typing one or more keystrokes in
 sequence. These commands appear as follows:
 
+Notation | Meaning
+---      | ---
+`x`      | press `x` once
+`dw`     | In sequence, press `d`, then `w`
+`dap`    | In sequence, press `d`, `a`, then `p`
+
+Most of these sequences involve two or three keystrokes, but some are longer.
+Deciphering the meaning of Vim's Normal mode command sequences can be
+challenging, but you'll get better at it with practice.
+
+
+Playing Chords
+--------------
+
+When you see a keystroke such as `<C-p>`, it doesn't mean "Press `<`, then `C`,
+then `.`, and so on." The `<C-p>` notation is equivalent to `<Ctrl-p>`, which
+means "Press the `<Ctrl>` and `p` keys at the same time."
+
+
