@@ -81,4 +81,116 @@ When you see a keystroke such as `<C-p>`, it doesn't mean "Press `<`, then `C`,
 then `.`, and so on." The `<C-p>` notation is equivalent to `<Ctrl-p>`, which
 means "Press the `<Ctrl>` and `p` keys at the same time."
 
+I didn't choose this notation without good reason. Vim's documentation uses
+it (`:h key-notation`), and we can also use it in defining custom key mappings.
+Some of Vim's commands are formed by combining chords and keystrokes in
+sequence, and this notation handles them well. Consider these examples:
 
+Notation     | Meaning
+------------ | --------
+`<C-n>`      | Press `<Ctrl>` and `n` at the same time
+`g<C-]>`     | Press `g`, followed by `<Ctrl>` and `]` at the same time
+`<C-r>0`     | Press `<Ctrl>` and `r` at the same time, then `0`
+`<C-w><C-=>` | Press `<Ctrl>` and `w` at the same time, then `<Ctrl>` and `=` at the same time
+
+
+Placeholders
+------------
+
+Many of Vim's commands require two or more keystrokes to be entered in
+sequence. Some commands must be followed by a particular kind of keystroke,
+while other commands can be followed by any key on the keyboard. I use curly
+braces to denote the set of valid keystrokes that can follow a command. Here
+are some examples:
+
+Notation          | Meaning
+------------      | --------
+`f{char}`         | Press `f`, followed by any other character
+```{a-z}``        | Press `` ` ``, followed by any lowercase letter.
+`m{a-zA-Z}`       | Press `m`, followed by any lowercase or uppercase letter.
+`d{motion}`       | Press `d`, followed by any motion command
+`<C-r>{register}` | Press <Ctrl> and `r` at the same time, followed by the address of a register
+
+
+Showing Special Keys
+--------------------
+
+Some keys are called by name. This table shows a selection of them:
+
+Notation  | Meaning
+--------- | --------
+`<ESC>`   | Press the Escape key
+`<CR>`    | Press the carriage return key (also known as `<Enter>`)
+`<Ctrl>`  | Press the Control key
+`<Tab>`   | Press the Tab key
+`<Shift>` | Press the Shift key
+`<S-Tab>` | Press the `<Shift>` and the `<tab>` keys at the same time
+`<Up>`    | Press the up arrow key
+`<Down>`  | Press the down arrow key
+`␣`       | Press the space bar
+
+
+Note that the space bar is represented as `␣`. This could be combined with the
+`f{char}` command to form `f␣`.
+
+
+Switching Modes Midcommand
+--------------------------
+
+When operating Vim,it's common to switch from Normal to Insert mode and back
+again. Each keystroke could mean something different, depending on which mode
+is active. I've used an alternative style to represent keystrokes entered in
+Insert mode, which makes it easy to differentiate them from Normal mode
+keystrokes.
+
+Consider this example: `cw`_replacement<ESC>. The Normal mode `cw` command
+deletes to the end of the current word and Switches to Insert mode. Then we
+type the word "_replacement_" in Insert mode and press `<ESC>` to switch back
+to Normal mode again.
+
+The Normal mode styling is also used for Visual mode keystrokes, while the
+Insert mode styling can indicate keystrokes entered in Command-Line mode and
+Replace mode. Which mode is active should be clear from context.
+
+
+Interacting with the Command line.
+----------------------------------
+
+In some tips we'll execute a command line, either in the shell or from inside
+Vim. This is what it looks like when we execute the `grep` command in the
+shell:
+
+```
+$ grep -n Waldo *
+```
+
+And this is how it looks when we execute Vim's built-in `:grep` command:
+
+```
+:grep Waldo *
+```
+
+In _Practical Vim_, the `$` symbol indicates that a command line is to be
+executed in an external shell, whereas the `:` prompt indicates that the
+command line is to be executed internally from Command-Line mode. Occasionally
+we'll see other prompts, including these:
+
+
+Prompt  | Meaning
+------- | --------
+`$`     | Enter the command line in an external shell
+`:`     | Use Command-Line mode to execute an Ex command
+`/`     | Use Command-Line mode to perform a forward search
+`?`     | Use Command-Line mode to perform a backward search
+`=`     | Use Command-Line mode to evaluate a Vim script expression
+
+
+Any time you see an Ex command listed inline, such as `:write`, you can assume
+that the `<CR>` key is pressed to execute the command. Nothing happens
+otherwise, so you can consider `<CR>` to be implicit.
+
+By contrast, Vim's search command allows us to preview the first match before
+pressing `<CR>` (see Tip 81, on page 202). When you see a search command listed
+inline, such as `/pattern<CR>`, the `<CR>` keystroke is listed explicitly. If
+the `<CR>` is omitted, that's intentional, and it means you shouldn't press
+the Enter key just yet.
